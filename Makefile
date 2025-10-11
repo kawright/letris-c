@@ -26,13 +26,14 @@ HEADER_ONLY_FILES := \
 
 OBJS := \
 	build/obj/err.o \
-	build/obj/graph.o
+	build/obj/event.o \
+	build/obj/graph.o 
 
 # ----- REAL TARGETS -----
 
 build/obj/%.o: src/%.c src/%.h
 	@mkdir -p build/obj
-	${CC} $< ${CC_FLAGS} ${LIBS} ${FEATURES} -c -o $@
+	@${CC} $< ${CC_FLAGS} ${LIBS} ${FEATURES} -c -o $@
 	@echo "Built target '$@'"
 
 build/bin/letris: src/main.c ${OBJS} ${HEADER_ONLY_FILES}

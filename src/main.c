@@ -1,7 +1,8 @@
 /* main.c - entry point */
 
-#include "err.h"
 #include "debug.h"
+#include "err.h"
+#include "event.h"
 #include "graph.h"
 #include "type.h"
 
@@ -25,7 +26,13 @@ I16 main(I16 argc, Ch **argv) {
     clear_screen(&bg);
     flip();
 
-    while (TRUE) {}
+	Event event;
+	while (TRUE) {
+		get_next_event(&event);
+		if (event.event_type == EventType_WIN_CLOSE) {
+			break;
+		}
+	}
 
     close_graphics();
  
