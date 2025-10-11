@@ -6,11 +6,20 @@
 #include "err.h"
 #include "type.h"
 
-/* ----- CONSTANTS ----- */
+/* ----- DEFAULTS ----- */
 
-#define DEFAULT_SCREEN_WIDTH 400
-#define DEFAULT_SCREEN_HEIGHT 600
-#define DEFAULT_WIN_TITLE "letris"
+#define DEFAULT_SCREEN_WIDTH            400
+#define DEFAULT_SCREEN_HEIGHT           600
+
+/* ----- LAYOUT CONSTANTS ----- */
+
+#define LAYOUT_GRID_WIDTH               6                   // In tile space, not px. space
+#define LAYOUT_GRID_HEIGHT              12                  // ""
+#define LAYOUT_TILE_BORDER_RATIO        0.1                 // Tile border to side-length ratio
+
+/* ----- OTHER CONSTANTS ----- */
+
+#define DEFAULT_WIN_TITLE               "letris"
 
 /* ----- STRUCTS ----- */
 
@@ -20,11 +29,22 @@ typedef struct STRUCT_COLOR {
 	U8		b;
 } Color;
 
+typedef struct STRUCT_GAME_SCREEN {
+    U16     width;
+    U16     height;
+    U16     grid_sz;
+    U16     tile_border_sz;
+    U16     horiz_pad;
+    U16     vert_pad; 
+} GameScreen;
+
 /* ----- FUNCTIONS ----- */
 
 Void init_color(Color *color);
 
-Void init_graphics(Err *err);
+Void init_game_screen(GameScreen *game_screen);
+
+Void init_graphics(GameScreen *game_screen, U16 width, U16 height, Err *err);
 
 Void clear_screen(Color *color);
 
