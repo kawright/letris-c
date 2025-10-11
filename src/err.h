@@ -18,6 +18,7 @@
 #define ERR_INIT		6
 #define ERR_GRAPH		7
 #define ERR_ASSERT      240
+
 /* ----- OTHER CONSTANTS ----- */
 
 #define ERR_MSG_BUF_SZ 128

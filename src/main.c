@@ -23,30 +23,46 @@ I16 main(I16 argc, Ch **argv) {
         return err.code;
     }
 
-    DEBUG_LOG("%s\n", "Start GameScreen data dump")
-    DEBUG_LOG("width:                   %d px\n", game_screen.width)
-    DEBUG_LOG("height:                  %d px\n", game_screen.height)
-    DEBUG_LOG("grid size:               %d px\n", game_screen.grid_sz)
-    DEBUG_LOG("horizontal padding:      %d px\n", game_screen.horiz_pad)
-    DEBUG_LOG("vertical padding:        %d px\n", game_screen.vert_pad)
-    DEBUG_LOG("tile border size:        %d px\n", game_screen.tile_border_sz)
-    DEBUG_LOG("%s\n\n", "End GameScreen data dump")
 
     Color bg;
     init_color(&bg);
     bg.r = 0x00; bg.g = 0xff; bg.b = 0x00;
 
+    Color pad;
+    init_color(&pad);
+    pad.r = 0xff; pad.g = 0x00; pad.b = 0x00;
+
 	Event event;
-	while (TRUE) {
+    Bool is_running = TRUE;
+	while (is_running) {
 
         // Handle events:
-		get_next_event(&event);
-		if (event.event_type == EventType_WIN_CLOSE) {
-			break;
-		}
+		get_next_event(&event, &err);
+        if (is_err(&err)) {
+            close_graphics();
+            warn(&err);
+            exit(err.code);
+        }
+        switch (event.event_type) {
+
+            case (EventType_WIN_CLOSE):
+            is_running = FALSE;
+            break;
+
+            case (EventType_WIN_RESIZE):
+            EventPayloadWinResize *win_resize_payload = event.payload;
+            set_game_screen(&game_screen, win_resize_payload->width, win_resize_payload->height);
+            reload_win();
+            break;
+
+            default:
+            break;
+
+        }
+        clear_event(&event); 
 
         // Drawing:
-        clear_screen(&bg);
+        clear_screen(&game_screen, &bg, &pad);
         flip();
 	}
 

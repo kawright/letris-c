@@ -33,6 +33,8 @@ typedef struct STRUCT_GAME_SCREEN {
     U16     width;
     U16     height;
     U16     grid_sz;
+    U16     grid_width;                 // in px.
+    U16     grid_height;                // ""
     U16     tile_border_sz;
     U16     horiz_pad;
     U16     vert_pad; 
@@ -44,9 +46,13 @@ Void init_color(Color *color);
 
 Void init_game_screen(GameScreen *game_screen);
 
+Void set_game_screen(GameScreen *game_screen, U16 width, U16 height);
+
 Void init_graphics(GameScreen *game_screen, U16 width, U16 height, Err *err);
 
-Void clear_screen(Color *color);
+Void clear_screen(GameScreen *game_screen, Color *bg, Color *pad);
+
+Void reload_win();
 
 Void flip();
 
