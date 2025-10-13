@@ -8,6 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* NOTE - FEATURE_DEBUG_MODE is a compile-time defined macro that indicates whether or not debug mode is enabled. */
+
+/* NOTE - All of the macros defined in this header file are disabled when 'FEATURE_DEBUG_MODE' is not defined. */
+
+/* ----- MACROS ----- */
+
+/* Assert that a given expression is true. At least one variadic MUST be given. */
 #ifdef FEATURE_DEBUG_MODE
     #define ASSERT_TRUE(expr, msg, ...) \
         if (!expr) { \
@@ -22,9 +29,10 @@
 		}
 #else
     #define ASSERT_TRUE(expr, msg, ...) do {} while(0);
+#endif
 
-#endif		                                                // FEATURE_DEBUG_MODE
 
+/* Write a debug message to STDOUT. At least one variadic MUST be given. */
 #ifdef FEATURE_DEBUG_MODE
     #define DEBUG_LOG(msg, ...) \
         printf("DEBUG (%s:%d) - ", __FILE__, __LINE__); \

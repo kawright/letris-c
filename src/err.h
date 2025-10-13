@@ -9,15 +9,15 @@
 
 /* ----- ERROR CODES ----- */
 
-#define ERR_OK          0
-#define ERR_RUN         1
-#define ERR_ARGV        2
-#define ERR_MEM         3
-#define ERR_IO          4
-#define ERR_DATA        5
-#define ERR_INIT		6
-#define ERR_GRAPH		7
-#define ERR_ASSERT      240
+#define ERR_OK          0                   // No error
+#define ERR_RUN         1                   // Generic runtime error
+#define ERR_ARGV        2                   // Bad command-line option
+#define ERR_MEM         3                   // Out-of-memory
+#define ERR_IO          4                   // IO failure
+#define ERR_DATA        5                   // Corrupt/malformed data
+#define ERR_INIT		6                   // Subsystem initialization
+#define ERR_GRAPH		7                   // Graphics failure
+#define ERR_ASSERT      240                 // Assertion failure
 
 /* ----- OTHER CONSTANTS ----- */
 
@@ -26,10 +26,12 @@
 
 /* ----- MACROS ----- */
 
+/* Throw an error. Supports 'printf' style formatting. At least one format variable must be given. */
 #define THROW(err, code, msg, ...) throw(err, code, __LINE__, __FILE__, msg, ##__VA_ARGS__);
 
 /* ----- STRUCTS ----- */
 
+/* Holds an error state. */
 typedef struct STRUCT_ERR {
     U8      code;
     U32     ln;

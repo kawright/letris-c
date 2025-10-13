@@ -8,7 +8,8 @@ FEATURES := \
 # ----- LIBRARIES -----
 
 LIBS := \
-	-lSDL2
+	-lSDL2 \
+	-lSDL2_ttf
 
 # ----- COMPILER OPTIONS -----
 
