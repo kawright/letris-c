@@ -115,6 +115,10 @@ Void init_text(GameScreen *game_screen, Err *err) {
         THROW(err, ERR_DATA, "%s\n", "Cannot initialize text: game_screen->theme is NULL")
         return; 
     }
+    if (TTF_Init() == -1) {
+        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF: %s\n", TTF_GetError())
+        return;
+    }
     _tile_font = NULL;
     _tile_font = TTF_OpenFont(game_screen->theme->font_file, game_screen->tile_font_sz);
     if (_tile_font == NULL) {
@@ -147,8 +151,18 @@ Void clear_screen(GameScreen *game_screen, Err *err) {
         game_screen->theme->color_bg->g, game_screen->theme->color_bg->b));
 }
 
-Void reload_win() {
+Void reload_win(GameScreen *game_screen, Err *err) {
     _surf = SDL_GetWindowSurface(_win);
+    if (game_screen->theme == NULL) {
+        THROW(err, ERR_DATA, "%s\n", "Cannot initialize text: game_screen->theme is NULL")
+        return; 
+    }
+    _tile_font = TTF_OpenFont(game_screen->theme->font_file, game_screen->tile_font_sz);
+    if (_tile_font == NULL) {
+        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF")
+        return;
+    }
+    
 }
 
 Void flip() {
@@ -156,7 +170,10 @@ Void flip() {
     SDL_RenderPresent(_rend);
 }
 
-Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Err *err) {
+Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Ch *letter, Err *err) {
+    
+    // Error checking:
+
     if (game_screen->theme == NULL) {
         THROW(err, ERR_DATA, "%s\n", "Cannot draw tile: game_screen->theme is NULL")
         return;
@@ -169,6 +186,9 @@ Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Err *err) {
         THROW(err, ERR_DATA, "%s\n", "Cannot draw tile: game_screen->theme->color_tile_border is NULL")
         return;
     }
+
+    // Draw the tile
+    
     SDL_Rect outer_rect = {
         pos_x * game_screen->grid_sz + game_screen->horiz_pad,
         pos_y * game_screen->grid_sz + game_screen->vert_pad,
@@ -185,7 +205,37 @@ Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Err *err) {
         game_screen->theme->color_tile_border->g, game_screen->theme->color_tile_border->b));
     SDL_FillRect(_surf, &inner_rect, SDL_MapRGB(_surf->format, game_screen->theme->color_tile_body->r, 
         game_screen->theme->color_tile_body->g, game_screen->theme->color_tile_body->b));
-    
+
+    // Draw the letter
+
+    SDL_Surface     *temp_surface;
+    SDL_Color       temp_color_fg;
+                    temp_color_fg.r = game_screen->theme->color_tile_border->r;
+                    temp_color_fg.g = game_screen->theme->color_tile_border->g;
+                    temp_color_fg.b = game_screen->theme->color_tile_border->b;
+    SDL_Color       temp_color_bg;
+                    temp_color_bg.r = game_screen->theme->color_tile_body->r;
+                    temp_color_bg.g = game_screen->theme->color_tile_body->g;
+                    temp_color_bg.b = game_screen->theme->color_tile_body->b;
+
+    temp_surface = TTF_RenderText_Shaded(_tile_font, letter, temp_color_fg, temp_color_bg);
+    if (temp_surface == NULL) {
+        THROW(err, ERR_GRAPH, "Could not render text; SDL reported an error: %s\n", TTF_GetError())
+        return;
+    }
+    SDL_SetSurfaceBlendMode(temp_surface, SDL_BLENDMODE_NONE);
+
+    U16 text_pos_x = (pos_x * game_screen->grid_sz) + (game_screen->grid_sz / 2) - 
+        (temp_surface->w / 2) + game_screen->horiz_pad;
+    U16 text_pos_y = (pos_y * game_screen->grid_sz) + (game_screen->grid_sz / 2) - 
+        (temp_surface->h / 2) + game_screen->vert_pad;
+    SDL_Rect temp_rect = { text_pos_x, text_pos_y, 0, 0 };          // Last two fields are ignored
+    if (SDL_BlitSurface(temp_surface, NULL, _surf, &temp_rect) != 0) {
+        THROW(err, ERR_GRAPH, "Could not blit text surface; SDL reported an error: %s\n", TTF_GetError())
+        SDL_FreeSurface(temp_surface);
+        return;
+    }
+    SDL_FreeSurface(temp_surface);
 }
 
 Void close_graphics() {

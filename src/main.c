@@ -120,6 +120,13 @@ I16 main(I16 argc, Ch **argv) {
     theme_red.color_text_debug              = &color_white;  
 
     game_screen.theme = &theme_red;
+    
+    init_text(&game_screen, &err);
+    if (is_err(&err)) {
+        warn(&err);
+        SDL_Quit();
+        return err.code;
+    }
 
 	Event event;
     Bool is_running = TRUE;
@@ -141,7 +148,12 @@ I16 main(I16 argc, Ch **argv) {
             case (EventType_WIN_RESIZE):
             EventPayloadWinResize *win_resize_payload = event.payload;
             set_game_screen(&game_screen, win_resize_payload->width, win_resize_payload->height);
-            reload_win();
+            reload_win(&game_screen, &err);
+            if (is_err(&err)) {
+                close_graphics();
+                warn(&err);
+                exit(err.code);
+            }
             break;
 
             default:
@@ -152,7 +164,7 @@ I16 main(I16 argc, Ch **argv) {
 
         // Drawing:
         clear_screen(&game_screen, &err);
-        draw_tile(&game_screen, 2.5, 2.5, &err);
+        draw_tile(&game_screen, 2.5, 2.5, "b", &err);
         flip();
 	}
 

@@ -70,11 +70,11 @@ Void init_text(GameScreen *game_screen, Err *err);
 
 Void clear_screen(GameScreen *game_screen, Err *err);
 
-Void reload_win();
+Void reload_win(GameScreen *game_screen, Err *err);
 
 Void flip();
 
-Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Err *err);
+Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Ch *letter, Err *err);
 
 Void close_graphics();
 
