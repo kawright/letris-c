@@ -9,6 +9,17 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
+/* ----- THEME NAMES ----- */
+
+#define THEME_CLASSIC           0
+#define THEME_RED               1
+#define THEME_YELLOW            2
+#define THEME_BLUE              3
+#define THEME_PINK_GREEN        4
+#define THEME_GREEN_TEAL        5
+#define THEME_BROWN             6
+#define THEME_BLACK             7
+
 I16 main(I16 argc, Ch **argv) {
 
     Err err;
@@ -81,6 +92,7 @@ I16 main(I16 argc, Ch **argv) {
 
     // Greens:
     Color color_green;                          init_color(&color_green, 0, 128, 0);
+    Color color_dark_green;                     init_color(&color_dark_green, 0, 100, 0);
     Color color_chartreuse;                     init_color(&color_chartreuse, 127, 255, 0);
     Color color_lime;                           init_color(&color_lime, 0, 255, 0);
     Color color_green_yellow;                   init_color(&color_green_yellow, 173, 255, 47);
@@ -100,26 +112,75 @@ I16 main(I16 argc, Ch **argv) {
     Color color_silver;                         init_color(&color_silver, 192, 192, 192);
 
     // Initialize Themes:
+ 
+    Theme themes[8];
+ 
+    init_theme(&themes[THEME_CLASSIC], "./asset/font/Caprasimo.ttf");
+    themes[THEME_CLASSIC].color_bg                          = &color_slate_blue;
+    themes[THEME_CLASSIC].color_pad                         = &color_dark_slate_blue;
+    themes[THEME_CLASSIC].color_tile_body                   = &color_papaya_whip;
+    themes[THEME_CLASSIC].color_tile_border                 = &color_dark_orange;
+    themes[THEME_CLASSIC].color_text_normal                 = &color_white;
+    themes[THEME_CLASSIC].color_text_debug                  = &color_white;
    
-    Theme theme_classic;                        
-    init_theme(&theme_classic, "./asset/font/Caprasimo.ttf");
-    theme_classic.color_bg                  = &color_slate_blue;
-    theme_classic.color_pad                 = &color_dark_slate_blue;
-    theme_classic.color_tile_body           = &color_papaya_whip;
-    theme_classic.color_tile_border         = &color_dark_orange;
-    theme_classic.color_text_normal         = &color_violet;
-    theme_classic.color_text_debug          = &color_white;
-   
-    Theme theme_red;
-    init_theme(&theme_red, "./asset/font/Caprasimo.ttf");
-    theme_red.color_bg                      = &color_crimson;
-    theme_red.color_pad                     = &color_dark_red;
-    theme_red.color_tile_body               = &color_violet;
-    theme_red.color_tile_border             = &color_medium_violet_red;
-    theme_red.color_text_normal             = &color_papaya_whip;
-    theme_red.color_text_debug              = &color_white;  
+    init_theme(&themes[THEME_RED], "./asset/font/Caprasimo.ttf");
+    themes[THEME_RED].color_bg                              = &color_crimson;
+    themes[THEME_RED].color_pad                             = &color_dark_red;
+    themes[THEME_RED].color_tile_body                       = &color_white;
+    themes[THEME_RED].color_tile_border                     = &color_red;
+    themes[THEME_RED].color_text_normal                     = &color_white;
+    themes[THEME_RED].color_text_debug                      = &color_white;
+    
+    init_theme(&themes[THEME_YELLOW], "./asset/font/Caprasimo.ttf");
+    themes[THEME_YELLOW].color_bg                           = &color_yellow;
+    themes[THEME_YELLOW].color_pad                          = &color_gold;
+    themes[THEME_YELLOW].color_tile_body                    = &color_papaya_whip;
+    themes[THEME_YELLOW].color_tile_border                  = &color_dark_orange;
+    themes[THEME_YELLOW].color_text_normal                  = &color_white;
+    themes[THEME_YELLOW].color_text_debug                   = &color_white;
+    
+    init_theme(&themes[THEME_BLUE], "./asset/font/Caprasimo.ttf");
+    themes[THEME_BLUE].color_bg                             = &color_medium_blue;
+    themes[THEME_BLUE].color_pad                            = &color_dark_blue;
+    themes[THEME_BLUE].color_tile_body                      = &color_white;
+    themes[THEME_BLUE].color_tile_border                    = &color_deep_sky_blue;
+    themes[THEME_BLUE].color_text_normal                    = &color_white;
+    themes[THEME_BLUE].color_text_debug                     = &color_white;
+    
+    init_theme(&themes[THEME_PINK_GREEN], "./asset/font/Caprasimo.ttf");
+    themes[THEME_PINK_GREEN].color_bg                       = &color_hot_pink;
+    themes[THEME_PINK_GREEN].color_pad                      = &color_deep_pink;
+    themes[THEME_PINK_GREEN].color_tile_body                = &color_white;
+    themes[THEME_PINK_GREEN].color_tile_border              = &color_chartreuse;
+    themes[THEME_PINK_GREEN].color_text_normal              = &color_white;
+    themes[THEME_PINK_GREEN].color_text_debug               = &color_white;
+    
+    init_theme(&themes[THEME_GREEN_TEAL], "./asset/font/Caprasimo.ttf");
+    themes[THEME_GREEN_TEAL].color_bg                       = &color_green;
+    themes[THEME_GREEN_TEAL].color_pad                      = &color_dark_green;
+    themes[THEME_GREEN_TEAL].color_tile_body                = &color_white;
+    themes[THEME_GREEN_TEAL].color_tile_border              = &color_medium_turquoise;
+    themes[THEME_GREEN_TEAL].color_text_normal              = &color_white;
+    themes[THEME_GREEN_TEAL].color_text_debug               = &color_white;
+    
+    init_theme(&themes[THEME_BROWN], "./asset/font/Caprasimo.ttf");
+    themes[THEME_BROWN].color_bg                            = &color_sienna;
+    themes[THEME_BROWN].color_pad                           = &color_saddle_brown;
+    themes[THEME_BROWN].color_tile_body                     = &color_beige;
+    themes[THEME_BROWN].color_tile_border                   = &color_chocolate;
+    themes[THEME_BROWN].color_text_normal                   = &color_white;
+    themes[THEME_BROWN].color_text_debug                    = &color_white;
+    
+    init_theme(&themes[THEME_BLACK], "./asset/font/Caprasimo.ttf");
+    themes[THEME_BLACK].color_bg                            = &color_silver;
+    themes[THEME_BLACK].color_pad                           = &color_gainsboro;
+    themes[THEME_BLACK].color_tile_body                     = &color_white;
+    themes[THEME_BLACK].color_tile_border                   = &color_black;
+    themes[THEME_BLACK].color_text_normal                   = &color_white;
+    themes[THEME_BLACK].color_text_debug                    = &color_white;
 
-    game_screen.theme = &theme_red;
+    U8 current_theme        = 0;
+    game_screen.theme       = &themes[current_theme];
     
     init_text(&game_screen, &err);
     if (is_err(&err)) {
@@ -133,12 +194,7 @@ I16 main(I16 argc, Ch **argv) {
 	while (is_running) {
 
         // Handle events:
-		get_next_event(&event, &err);
-        if (is_err(&err)) {
-            close_graphics();
-            warn(&err);
-            exit(err.code);
-        }
+		get_next_event(&event);
         switch (event.event_type) {
 
             case (EventType_WIN_CLOSE):
@@ -146,8 +202,7 @@ I16 main(I16 argc, Ch **argv) {
             break;
 
             case (EventType_WIN_RESIZE):
-            EventPayloadWinResize *win_resize_payload = event.payload;
-            set_game_screen(&game_screen, win_resize_payload->width, win_resize_payload->height);
+            set_game_screen(&game_screen, event.window_width, event.window_height);
             reload_win(&game_screen, &err);
             if (is_err(&err)) {
                 close_graphics();
@@ -156,11 +211,46 @@ I16 main(I16 argc, Ch **argv) {
             }
             break;
 
+            case (EventType_KEY_PRESS):
+            switch (event.keyboard_key) {
+                
+                case KeyboardKey_UP:
+                break;
+
+                case KeyboardKey_DOWN:
+                break;
+
+                case KeyboardKey_LEFT:
+                if (current_theme == 0) {
+                    current_theme = 7;
+                } else {
+                    current_theme--;
+                }
+                game_screen.theme = &themes[current_theme];
+                break;
+
+                case KeyboardKey_RIGHT:
+                if (current_theme == 7) {
+                    current_theme = 0;
+                } else {
+                    current_theme++;
+                }
+                game_screen.theme = &themes[current_theme];
+                break;
+
+                case KeyboardKey_SPACE:
+                break;
+
+                case KeyboardKey_NO_KEY:
+                case KeyboardKey_UNDEF:
+                break;
+
+            }
+
             default:
             break;
 
         }
-        clear_event(&event); 
 
         // Drawing:
         clear_screen(&game_screen, &err);

@@ -17,24 +17,29 @@ typedef enum ENUM_EVENT_TYPE {
     EventType_KEY_REL
 } EventType;
 
+typedef enum ENUM_KEYBOARD_KEY {
+    KeyboardKey_NO_KEY,
+    KeyboardKey_UNDEF,
+    KeyboardKey_UP,
+    KeyboardKey_DOWN,
+    KeyboardKey_RIGHT,
+    KeyboardKey_LEFT,
+    KeyboardKey_SPACE
+} KeyboardKey;
+
 /* ----- STRUCTS ----- */
 
 typedef struct STRUCT_EVENT {
     EventType       event_type;
-    Void            *payload;
+    U16             window_height;
+    U16             window_width;
+    KeyboardKey     keyboard_key;
 } Event;
-
-typedef struct STRUCT_EVENT_PAYLOAD_WIN_RESIZE {
-    U16             width;
-    U16             height;
-} EventPayloadWinResize;
 
 /* ----- FUNCTIONS ----- */
 
 Void init_event(Event *event);
 
-Void get_next_event(Event *event, Err *err);
-
-Void clear_event(Event *event);
+Void get_next_event(Event *event);
 
 #endif
