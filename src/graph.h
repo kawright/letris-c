@@ -46,6 +46,8 @@ Void init_color(Color *color, U8 r, U8 g, U8 b);
 
 Void clear_screen();
 
+Void clip_screen();
+
 Void reload_win(Err *err);
 
 Void flip();

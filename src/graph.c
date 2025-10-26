@@ -130,6 +130,25 @@ Void clear_screen() {
     SDL_FillRect(_surf, &game_screen_rect, SDL_MapRGB(_surf->format, _bg_color.r, _bg_color.g, _bg_color.b));
 }
 
+Void clip_screen() {
+    if (_vert_pad > 0) {
+        SDL_Rect top_bar = {
+            0,
+            0,
+            _win_width,
+            _vert_pad
+        };
+        SDL_Rect bottom_bar = {
+            0,
+            _vert_pad + _grid_height,
+            _win_width,
+            _vert_pad
+        };
+        SDL_FillRect(_surf, &top_bar, SDL_MapRGB(_surf->format, _pad_color.r, _pad_color.g, _pad_color.b));
+        SDL_FillRect(_surf, &bottom_bar, SDL_MapRGB(_surf->format, _pad_color.r, _pad_color.g, _pad_color.b));
+    }
+}
+
 Void reload_win(Err *err) {
     _surf = SDL_GetWindowSurface(_win);
     _win_width          = _surf->w;

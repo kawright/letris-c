@@ -271,7 +271,7 @@ I16 main(I16 argc, Ch **argv) {
 			close_graphics();
 			return err.code;
 		}
-
+        clip_screen();
         flip();
 	}
 
