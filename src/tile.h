@@ -10,6 +10,7 @@
 /* ----- CONSTANTS ----- */
 
 #define TILE_LETTER_BUF_SZ      3
+#define TILE_DROP_SPD			0.8
 
 /* ----- TYPES ----- */
 

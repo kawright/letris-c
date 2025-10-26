@@ -186,6 +186,11 @@ I16 main(I16 argc, Ch **argv) {
     init_tile_matrix(&matrix_placed, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
     init_tile_matrix(&matrix_free, 1, LAYOUT_FREE_TILE_COUNT);
     init_tile_matrix(&matrix_shift, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
+	matrix_free.pos_x = 2.5;
+	matrix_free.pos_y = (-4.0);
+	set_tile_in_matrix(&matrix_free, "a", 0, 0, NULL);
+	set_tile_in_matrix(&matrix_free, "b", 0, 1, NULL);
+	set_tile_in_matrix(&matrix_free, "c", 0, 2, NULL);
 
 	Clock 	clock;
 	init_clock(&clock);
@@ -251,10 +256,22 @@ I16 main(I16 argc, Ch **argv) {
 
         }
 
+		// Update Free Tiles Position:
+		F32 delta_time_secs = ((F32) tick_clock(&clock)) / 1000.0;
+		matrix_free.pos_y += delta_time_secs * TILE_DROP_SPD;
+
         // Drawing:
         set_pad_color(themes[current_theme].color_pad);
         set_bg_color(themes[current_theme].color_bg);
-        clear_screen();
+        clear_screen();			// TODO Refactor clear_screen to take pad and bg colors as args
+		draw_tile_matrix(themes[current_theme].color_tile_body, themes[current_theme].color_tile_border, &matrix_free,
+			&err);
+		if (is_err(&err)) {
+			warn(&err);
+			close_graphics();
+			return err.code;
+		}
+
         flip();
 	}
 
