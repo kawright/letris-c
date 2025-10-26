@@ -10,12 +10,25 @@
 
 #include <string.h>
 
-/* ----- PRIVATE VARIABLES ----- */
+/* ----- PRIVATE STATIC VARIABLES ----- */
 
-SDL_Window 		*_win;
-SDL_Surface 	*_surf;
-SDL_Renderer    *_rend;
-TTF_Font        *_tile_font;
+static SDL_Window           *_win;
+static SDL_Surface          *_surf;
+static SDL_Renderer         *_rend;
+static TTF_Font             *_font;
+static SDL_Color            _bg_color;
+static SDL_Color            _fg_color;
+static SDL_Color            _pad_color;
+static U16                  _win_width;
+static U16                  _win_height;
+static U16                  _grid_sz;
+static U16                  _grid_width; 
+static U16                  _grid_height;
+static U16                  _tile_border_sz;
+static U16                  _tile_font_sz;
+static U16                  _horiz_pad;
+static U16                  _vert_pad;
+static Ch                   _font_file[FONT_FILE_NAME_BUF_SZ];
 
 /* ----- FUNCTIONS ----- */
 
@@ -25,71 +38,21 @@ Void init_color(Color *color, U8 r, U8 g, U8 b) {
 	color->b = b;
 }
 
-Void init_game_screen(GameScreen *game_screen) {
-    game_screen->width                  = 0;
-    game_screen->height                 = 0;
-    game_screen->grid_sz                = 0;
-    game_screen->grid_width             = 0;
-    game_screen->grid_height            = 0;
-    game_screen->tile_border_sz         = 0;
-    game_screen->tile_font_sz           = 0;
-    game_screen->horiz_pad              = 0;
-    game_screen->vert_pad               = 0;
-    game_screen->theme                  = NULL;
-}
-
-Void init_theme(Theme *theme, Ch *font_file) {
-    theme->color_bg                     = NULL;
-    theme->color_pad                    = NULL;
-    theme->color_tile_body              = NULL;
-    theme->color_tile_border            = NULL;
-    theme->color_text_normal            = NULL;
-    theme->color_text_debug             = NULL;
-    strncpy(theme->font_file, font_file, THEME_FONT_NAME_BUF_SZ - 1);
-}
-
-Void set_game_screen(GameScreen *game_screen, U16 width, U16 height) {
-
-    // Set game screen data
-    game_screen->width              = width;
-    game_screen->height             = height;
-    
-    // Make a guess about the ideal tile size that maximizes at least one side of the entire window
-    U16 grid_sz_guess_x     = game_screen->width / LAYOUT_GRID_WIDTH;
-    U16 grid_sz_guess_y     = game_screen->height / LAYOUT_GRID_HEIGHT;
-    if (grid_sz_guess_x > grid_sz_guess_y) {
-        game_screen->grid_sz        = grid_sz_guess_y;
-        game_screen->vert_pad       = 0;
-        game_screen->horiz_pad      = (game_screen->width - (game_screen->grid_sz * LAYOUT_GRID_WIDTH)) / 2;
-    } else {
-        game_screen->grid_sz        = grid_sz_guess_x;
-        game_screen->horiz_pad      = 0;
-        game_screen->vert_pad       = (game_screen->height - (game_screen->grid_sz * LAYOUT_GRID_HEIGHT)) / 2;
-    }
-    game_screen->grid_width = LAYOUT_GRID_WIDTH * game_screen->grid_sz;
-    game_screen->grid_height = LAYOUT_GRID_HEIGHT * game_screen->grid_sz;
-
-    game_screen->tile_border_sz = game_screen->grid_sz * LAYOUT_TILE_BORDER_RATIO;
-    game_screen->tile_font_sz = game_screen->grid_sz * LAYOUT_TILE_FONT_RATIO;   
- 
-    DEBUG_LOG("%s\n", "Start GameScreen data dump")
-    DEBUG_LOG("width:                   %d px\n", game_screen->width)
-    DEBUG_LOG("height:                  %d px\n", game_screen->height)
-    DEBUG_LOG("grid size:               %d px\n", game_screen->grid_sz)
-    DEBUG_LOG("grid width:              %d px\n", game_screen->grid_width)
-    DEBUG_LOG("grid height:             %d px\n", game_screen->grid_height)
-    DEBUG_LOG("horizontal padding:      %d px\n", game_screen->horiz_pad)
-    DEBUG_LOG("vertical padding:        %d px\n", game_screen->vert_pad)
-    DEBUG_LOG("tile border size:        %d px\n", game_screen->tile_border_sz)
-    DEBUG_LOG("tile font size:          %d px\n", game_screen->tile_font_sz)
-    DEBUG_LOG("%s\n\n", "End GameScreen data dump")
-}
-
-Void init_graphics(GameScreen *game_screen, U16 width, U16 height, Err *err) {
+Void init_graphics(U16 width, U16 height, Ch *font_file, Err *err) {
 	
 	_win 	            = NULL;
 	_surf 	            = NULL;
     _rend               = NULL;
+    _font               = NULL;
+    _bg_color.r         = 0x00;
+    _bg_color.g         = 0x00;
+    _bg_color.b         = 0x00;
+    _fg_color.r         = 0xff;
+    _fg_color.g         = 0xff;
+    _fg_color.b         = 0xff;
+    _pad_color.r        = 0x00;
+    _pad_color.g        = 0x00;
+    _pad_color.b        = 0x00;
 	
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		THROW(err, ERR_INIT, "Could not initialize SDL video")
@@ -106,63 +69,95 @@ Void init_graphics(GameScreen *game_screen, U16 width, U16 height, Err *err) {
 	}
 	_surf = SDL_GetWindowSurface(_win);
     _rend = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    set_game_screen(game_screen, width, height);
+    strncpy(_font_file, font_file, FONT_FILE_NAME_BUF_SZ - 1);    
 
-}
-
-Void init_text(GameScreen *game_screen, Err *err) {
-    if (game_screen->theme == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot initialize text: game_screen->theme is NULL")
-        return; 
-    }
-    if (TTF_Init() == -1) {
-        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF: %s\n", TTF_GetError())
-        return;
-    }
-    _tile_font = NULL;
-    _tile_font = TTF_OpenFont(game_screen->theme->font_file, game_screen->tile_font_sz);
-    if (_tile_font == NULL) {
-        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF")
-        return;
-    }
-}
-
-Void clear_screen(GameScreen *game_screen, Err *err) {
-    SDL_Rect game_screen_rect = {
-        game_screen->horiz_pad,
-        game_screen->vert_pad,
-        game_screen->grid_width,
-        game_screen->grid_height
-    };
-    if (game_screen->theme == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot clear screen: game_screen->theme is NULL");
-    }
-    if (game_screen->theme->color_bg == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot clear screen: game_screen->theme->color_bg is NULL")
-        return;
-    }
-    if (game_screen->theme->color_pad == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot clear screen: game_screen->theme->color_pad is NULL")
-        return;
-    }
-	SDL_FillRect(_surf, NULL, SDL_MapRGB(_surf->format, game_screen->theme->color_pad->r, 
-        game_screen->theme->color_pad->g, game_screen->theme->color_pad->b));
-    SDL_FillRect(_surf, &game_screen_rect, SDL_MapRGB(_surf->format, game_screen->theme->color_bg->r, 
-        game_screen->theme->color_bg->g, game_screen->theme->color_bg->b));
-}
-
-Void reload_win(GameScreen *game_screen, Err *err) {
-    _surf = SDL_GetWindowSurface(_win);
-    if (game_screen->theme == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot initialize text: game_screen->theme is NULL")
-        return; 
-    }
-    _tile_font = TTF_OpenFont(game_screen->theme->font_file, game_screen->tile_font_sz);
-    if (_tile_font == NULL) {
-        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF")
-        return;
-    }
+    // Set game screen data
+    _win_width          = width;
+    _win_height         = height;
     
+    // Make a guess about the ideal tile size that maximizes at least one side of the entire window
+    U16 grid_sz_guess_x     = _win_width / LAYOUT_GRID_WIDTH;
+    U16 grid_sz_guess_y     = _win_height / LAYOUT_GRID_HEIGHT;
+    if (grid_sz_guess_x > grid_sz_guess_y) {
+        _grid_sz            = grid_sz_guess_y;
+        _vert_pad           = 0;
+        _horiz_pad          = (_win_width - (_grid_sz * LAYOUT_GRID_WIDTH)) / 2;
+    } else {
+        _grid_sz            = grid_sz_guess_x;
+        _horiz_pad          = 0;
+        _vert_pad           = (_win_height - (_grid_sz * LAYOUT_GRID_HEIGHT)) / 2;
+    }
+    _grid_width             = LAYOUT_GRID_WIDTH * _grid_sz;
+    _grid_height            = LAYOUT_GRID_HEIGHT * _grid_sz;
+
+    _tile_border_sz         = _grid_sz * LAYOUT_TILE_BORDER_RATIO;
+    _tile_font_sz           = _grid_sz * LAYOUT_TILE_FONT_RATIO;   
+
+    // Load font
+    if (TTF_Init() != 0) {
+        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF")
+        return;
+    } 
+    _font = TTF_OpenFont(font_file, _tile_font_sz);
+    if (_font == NULL) {
+        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF")
+        return;
+    }
+
+    DEBUG_LOG("%s\n", "Start GameScreen data dump")
+    DEBUG_LOG("width:                   %d px\n", _win_width)
+    DEBUG_LOG("height:                  %d px\n", _win_height)
+    DEBUG_LOG("grid size:               %d px\n", _grid_sz)
+    DEBUG_LOG("grid width:              %d px\n", _grid_width)
+    DEBUG_LOG("grid height:             %d px\n", _grid_height)
+    DEBUG_LOG("horizontal padding:      %d px\n", _horiz_pad)
+    DEBUG_LOG("vertical padding:        %d px\n", _vert_pad)
+    DEBUG_LOG("tile border size:        %d px\n", _tile_border_sz)
+    DEBUG_LOG("tile font size:          %d px\n", _tile_font_sz)
+    DEBUG_LOG("%s\n\n", "End GameScreen data dump")
+
+}
+
+
+Void clear_screen() {
+    SDL_Rect game_screen_rect = {
+        _horiz_pad,
+        _vert_pad,
+        _grid_width,
+        _grid_height
+    };
+	SDL_FillRect(_surf, NULL, SDL_MapRGB(_surf->format, _pad_color.r, _pad_color.g, _pad_color.b));
+    SDL_FillRect(_surf, &game_screen_rect, SDL_MapRGB(_surf->format, _bg_color.r, _bg_color.g, _bg_color.b));
+}
+
+Void reload_win(Err *err) {
+    _surf = SDL_GetWindowSurface(_win);
+    _win_width          = _surf->w;
+    _win_height         = _surf->h;
+    
+    // Make a guess about the ideal tile size that maximizes at least one side of the entire window
+    U16 grid_sz_guess_x     = _win_width / LAYOUT_GRID_WIDTH;
+    U16 grid_sz_guess_y     = _win_height / LAYOUT_GRID_HEIGHT;
+    if (grid_sz_guess_x > grid_sz_guess_y) {
+        _grid_sz            = grid_sz_guess_y;
+        _vert_pad           = 0;
+        _horiz_pad          = (_win_width - (_grid_sz * LAYOUT_GRID_WIDTH)) / 2;
+    } else {
+        _grid_sz            = grid_sz_guess_x;
+        _horiz_pad          = 0;
+        _vert_pad           = (_win_height - (_grid_sz * LAYOUT_GRID_HEIGHT)) / 2;
+    }
+    _grid_width             = LAYOUT_GRID_WIDTH * _grid_sz;
+    _grid_height            = LAYOUT_GRID_HEIGHT * _grid_sz;
+
+    // Load the font
+    _tile_border_sz         = _grid_sz * LAYOUT_TILE_BORDER_RATIO;
+    _tile_font_sz           = _grid_sz * LAYOUT_TILE_FONT_RATIO;   
+    _font = TTF_OpenFont(_font_file, _tile_font_sz);
+    if (_font == NULL) {
+        THROW(err, ERR_INIT, "%s\n", "Could not initialize SDL TTF")
+        return;
+    }
 }
 
 Void flip() {
@@ -170,65 +165,25 @@ Void flip() {
     SDL_RenderPresent(_rend);
 }
 
-Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Ch *letter, Err *err) {
-    
-    // Error checking:
 
-    if (game_screen->theme == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot draw tile: game_screen->theme is NULL")
-        return;
-    }
-    if (game_screen->theme->color_tile_body == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot draw tile: game_screen->theme->color_tile_body is NULL")
-        return;
-    }
-    if (game_screen->theme->color_tile_border == NULL) {
-        THROW(err, ERR_DATA, "%s\n", "Cannot draw tile: game_screen->theme->color_tile_border is NULL")
-        return;
-    }
+Void close_graphics() {
+	SDL_DestroyWindow(_win);
+	SDL_Quit();
+}
 
-    // Draw the tile
-    
-    SDL_Rect outer_rect = {
-        pos_x * game_screen->grid_sz + game_screen->horiz_pad,
-        pos_y * game_screen->grid_sz + game_screen->vert_pad,
-        game_screen->grid_sz,
-        game_screen->grid_sz
-    };
-    SDL_Rect inner_rect = {
-        (pos_x * game_screen->grid_sz) + game_screen->tile_border_sz + game_screen->horiz_pad,
-        (pos_y * game_screen->grid_sz) + game_screen->tile_border_sz + game_screen->vert_pad,
-        game_screen->grid_sz - (2 * game_screen->tile_border_sz),
-        game_screen->grid_sz - (2 * game_screen->tile_border_sz)
-    };
-    SDL_FillRect(_surf, &outer_rect, SDL_MapRGB(_surf->format, game_screen->theme->color_tile_border->r, 
-        game_screen->theme->color_tile_border->g, game_screen->theme->color_tile_border->b));
-    SDL_FillRect(_surf, &inner_rect, SDL_MapRGB(_surf->format, game_screen->theme->color_tile_body->r, 
-        game_screen->theme->color_tile_body->g, game_screen->theme->color_tile_body->b));
-
-    // Draw the letter
-
+Void draw_text_at(F32 pos_x, F32 pos_y, Ch *text, Err *err) {
     SDL_Surface     *temp_surface;
-    SDL_Color       temp_color_fg;
-                    temp_color_fg.r = game_screen->theme->color_tile_border->r;
-                    temp_color_fg.g = game_screen->theme->color_tile_border->g;
-                    temp_color_fg.b = game_screen->theme->color_tile_border->b;
-    SDL_Color       temp_color_bg;
-                    temp_color_bg.r = game_screen->theme->color_tile_body->r;
-                    temp_color_bg.g = game_screen->theme->color_tile_body->g;
-                    temp_color_bg.b = game_screen->theme->color_tile_body->b;
 
-    temp_surface = TTF_RenderText_Shaded(_tile_font, letter, temp_color_fg, temp_color_bg);
+    temp_surface = TTF_RenderText_Shaded(_font, text, _fg_color, _bg_color);
     if (temp_surface == NULL) {
         THROW(err, ERR_GRAPH, "Could not render text; SDL reported an error: %s\n", TTF_GetError())
         return;
     }
     SDL_SetSurfaceBlendMode(temp_surface, SDL_BLENDMODE_NONE);
 
-    U16 text_pos_x = (pos_x * game_screen->grid_sz) + (game_screen->grid_sz / 2) - 
-        (temp_surface->w / 2) + game_screen->horiz_pad;
-    U16 text_pos_y = (pos_y * game_screen->grid_sz) + (game_screen->grid_sz / 2) - 
-        (temp_surface->h / 2) + game_screen->vert_pad;
+    U16 text_pos_x = (pos_x * _grid_sz) + _horiz_pad;
+    U16 text_pos_y = (pos_y * _grid_sz) + _vert_pad;
+    
     SDL_Rect temp_rect = { text_pos_x, text_pos_y, 0, 0 };          // Last two fields are ignored
     if (SDL_BlitSurface(temp_surface, NULL, _surf, &temp_rect) != 0) {
         THROW(err, ERR_GRAPH, "Could not blit text surface; SDL reported an error: %s\n", TTF_GetError())
@@ -238,8 +193,72 @@ Void draw_tile(GameScreen *game_screen, F32 pos_x, F32 pos_y, Ch *letter, Err *e
     SDL_FreeSurface(temp_surface);
 }
 
-Void close_graphics() {
-	SDL_DestroyWindow(_win);
-	SDL_Quit();
+Void draw_text_center(F32 pos_y, Ch *text, Err *err) {
+    F32 text_width = guess_text_width(text, err);
+    if (is_err(err)) {
+        return;
+    }
+    F32 pos_x = ((F32) _win_width) / ((F32) _grid_sz) - (text_width / 2.0);
+    draw_text_at(pos_x, pos_y, text, err);
 }
 
+Void draw_rectangle(F32 top_left_x, F32 top_left_y, F32 width, F32 height, Err *err) {
+    SDL_Rect temp_rect = {
+        top_left_x * _grid_sz + _horiz_pad,
+        top_left_y * _grid_sz + _vert_pad,
+        width * _grid_sz,
+        height * _grid_sz 
+    };
+    SDL_FillRect(_surf, &temp_rect, SDL_MapRGB(_surf->format, _fg_color.r, _fg_color.g, _fg_color.b));
+}
+
+
+F32 guess_text_width(Ch *text, Err *err) {
+    SDL_Surface     *temp_surf;
+    temp_surf = TTF_RenderText_Shaded(_font, text, _fg_color, _bg_color);
+    if (temp_surf == NULL) {
+        THROW(err, ERR_GRAPH, "Could not render text to temporary surface: %s\n", text)
+        return 0.0;
+    }
+    F32 return_data = ((F32) temp_surf->w) / ((F32) _grid_sz);
+    SDL_FreeSurface(temp_surf);
+    return return_data; 
+}
+
+Void guess_text_dim(Ch *text, F32 *out_width, F32 *out_height, Err *err) {
+    SDL_Surface     *temp_surf;
+    temp_surf = TTF_RenderText_Shaded(_font, text, _fg_color, _bg_color);
+    if (temp_surf == NULL) {
+        THROW(err, ERR_GRAPH, "Could not render text to temporary surface: %s\n", text)
+        return;
+    }
+    *out_width      = ((F32) temp_surf->w) / ((F32) _grid_sz);
+    *out_height     = ((F32) temp_surf->h) / ((F32) _grid_sz);
+    SDL_FreeSurface(temp_surf);
+}
+
+Void set_bg_color(Color *color) {
+    _bg_color.r     = color->r;
+    _bg_color.g     = color->g;
+    _bg_color.b     = color->b;
+}
+
+Void set_fg_color(Color *color) {
+    _fg_color.r     = color->r;
+    _fg_color.g     = color->g;
+    _fg_color.b     = color->b;
+}
+
+Void set_pad_color(Color *color) {
+    _pad_color.r    = color->r;
+    _pad_color.g    = color->g;
+    _pad_color.b    = color->b;
+}
+
+Void set_font(Ch *font_file, F32 size, Err *err) {
+    strncpy(_font_file, font_file, FONT_FILE_NAME_BUF_SZ - 1);
+    _font = TTF_OpenFont(font_file, size * _grid_sz);
+    if (_font == NULL) {
+        THROW(err, ERR_INIT, "Could not load font file %s\n", font_file) 
+    }
+}

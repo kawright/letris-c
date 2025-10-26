@@ -4,6 +4,8 @@
 #include "err.h"
 #include "event.h"
 #include "graph.h"
+#include "tile.h"
+#include "theme.h"
 #include "type.h"
 
 #include <stdio.h>
@@ -25,12 +27,7 @@ I16 main(I16 argc, Ch **argv) {
     Err err;
     init_err(&err);
 
-    // Initalize graphics:
-
-    GameScreen game_screen;
-    init_game_screen(&game_screen);
-
-    init_graphics(&game_screen, DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, &err);
+    init_graphics(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, "./asset/font/Caprasimo.ttf", &err);
     if (is_err(&err)) {
         warn(&err);
         return err.code;
@@ -180,14 +177,7 @@ I16 main(I16 argc, Ch **argv) {
     themes[THEME_BLACK].color_text_debug                    = &color_white;
 
     U8 current_theme        = 0;
-    game_screen.theme       = &themes[current_theme];
-    
-    init_text(&game_screen, &err);
-    if (is_err(&err)) {
-        warn(&err);
-        SDL_Quit();
-        return err.code;
-    }
+
 
 	Event event;
     Bool is_running = TRUE;
@@ -202,8 +192,7 @@ I16 main(I16 argc, Ch **argv) {
             break;
 
             case (EventType_WIN_RESIZE):
-            set_game_screen(&game_screen, event.window_width, event.window_height);
-            reload_win(&game_screen, &err);
+            reload_win(&err);
             if (is_err(&err)) {
                 close_graphics();
                 warn(&err);
@@ -226,7 +215,6 @@ I16 main(I16 argc, Ch **argv) {
                 } else {
                     current_theme--;
                 }
-                game_screen.theme = &themes[current_theme];
                 break;
 
                 case KeyboardKey_RIGHT:
@@ -235,7 +223,6 @@ I16 main(I16 argc, Ch **argv) {
                 } else {
                     current_theme++;
                 }
-                game_screen.theme = &themes[current_theme];
                 break;
 
                 case KeyboardKey_SPACE:
@@ -253,8 +240,11 @@ I16 main(I16 argc, Ch **argv) {
         }
 
         // Drawing:
-        clear_screen(&game_screen, &err);
-        draw_tile(&game_screen, 2.5, 2.5, "b", &err);
+        set_pad_color(themes[current_theme].color_pad);
+        set_bg_color(themes[current_theme].color_bg);
+        clear_screen();
+        draw_tile(2.5, 2.5, themes[current_theme].color_tile_body, themes[current_theme].color_tile_border, "b", 
+            &err);
         flip();
 	}
 

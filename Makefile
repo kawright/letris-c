@@ -28,7 +28,9 @@ HEADER_ONLY_FILES := \
 OBJS := \
 	build/obj/err.o \
 	build/obj/event.o \
-	build/obj/graph.o 
+	build/obj/graph.o \
+	build/obj/tile.o \
+	build/obj/theme.o
 
 # ----- REAL TARGETS -----
 
