@@ -194,7 +194,9 @@ Void draw_text_at(F32 pos_x, F32 pos_y, Ch *text, Err *err) {
 }
 
 Void draw_text_center(F32 pos_y, Ch *text, Err *err) {
-    F32 text_width = guess_text_width(text, err);
+    F32 text_width;
+    F32 text_height;
+    guess_text_dim(text, &text_width, &text_height, err);
     if (is_err(err)) {
         return;
     }
@@ -210,19 +212,6 @@ Void draw_rectangle(F32 top_left_x, F32 top_left_y, F32 width, F32 height, Err *
         height * _grid_sz 
     };
     SDL_FillRect(_surf, &temp_rect, SDL_MapRGB(_surf->format, _fg_color.r, _fg_color.g, _fg_color.b));
-}
-
-
-F32 guess_text_width(Ch *text, Err *err) {
-    SDL_Surface     *temp_surf;
-    temp_surf = TTF_RenderText_Shaded(_font, text, _fg_color, _bg_color);
-    if (temp_surf == NULL) {
-        THROW(err, ERR_GRAPH, "Could not render text to temporary surface: %s\n", text)
-        return 0.0;
-    }
-    F32 return_data = ((F32) temp_surf->w) / ((F32) _grid_sz);
-    SDL_FreeSurface(temp_surf);
-    return return_data; 
 }
 
 Void guess_text_dim(Ch *text, F32 *out_width, F32 *out_height, Err *err) {

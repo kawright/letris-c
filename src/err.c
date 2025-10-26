@@ -16,6 +16,10 @@ Void init_err(Err *err) {
 }
 
 Void throw(Err *err, U8 code, U32 ln, Ch *file, Ch *msg, ...) {
+
+    if (err == NULL) {
+        return;
+    }
     
     // Set trivial fields:
     err->code = code;

@@ -1,9 +1,47 @@
 /* tile.c - tile operations */
 
+#include "debug.h"
 #include "err.h"
 #include "graph.h"
 #include "tile.h"
 #include "type.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+Void init_tile_matrix(TileMatrix *matrix, U8 width, U8 height) {
+    matrix->width               = width;
+    matrix->height              = height;
+    for (U8 row = 0; row < matrix->height; row++) {
+        for (U8 col = 0; col < matrix->width; col++) {
+            matrix->matrix[row][col][0] = '\0';
+        }
+    }
+}
+
+Ch *get_tile_from_matrix(TileMatrix *matrix, U8 column, U8 row, Err *err) {
+    if (column >= matrix->width) {
+        THROW(err, ERR_DATA, "%s\n", "Out of bounds tile matrix access")
+        return NULL;
+    }
+    if (row >= matrix->height) {
+        THROW(err, ERR_DATA, "%s\n", "Out of bounds tile matrix access")
+        return NULL;
+    }
+    return matrix->matrix[row][column];
+}
+
+Void set_tile_in_matrix(TileMatrix *matrix, Ch *letter, U8 column, U8 row, Err *err) {
+    if (column >= matrix->width) {
+        THROW(err, ERR_DATA, "%s\n", "Out of bounds tile matrix access")
+        return;
+    }
+    if (row >= matrix->height) {
+        THROW(err, ERR_DATA, "%s\n", "Out of bounds tile matrix access")
+        return;
+    }
+    strncpy(matrix->matrix[row][column], letter, 2);
+}
 
 Void draw_tile(F32 pos_x, F32 pos_y, Color *fg, Color *bg, Ch *letter, Err *err) {
 
@@ -19,9 +57,7 @@ Void draw_tile(F32 pos_x, F32 pos_y, Color *fg, Color *bg, Ch *letter, Err *err)
     if (is_err(err)) {
         return;
     }
-
     
-
     // Draw the letter
     F32 text_width;
     F32 text_height;
@@ -36,35 +72,22 @@ Void draw_tile(F32 pos_x, F32 pos_y, Color *fg, Color *bg, Ch *letter, Err *err)
         return;
     }
 
-    /*
-    SDL_Surface     *temp_surface;
-    SDL_Color       temp_color_fg;
-                    temp_color_fg.r = game_screen->theme->color_tile_border->r;
-                    temp_color_fg.g = game_screen->theme->color_tile_border->g;
-                    temp_color_fg.b = game_screen->theme->color_tile_border->b;
-    SDL_Color       temp_color_bg;
-                    temp_color_bg.r = game_screen->theme->color_tile_body->r;
-                    temp_color_bg.g = game_screen->theme->color_tile_body->g;
-                    temp_color_bg.b = game_screen->theme->color_tile_body->b;
+}
 
-    temp_surface = TTF_RenderText_Shaded(_tile_font, letter, temp_color_fg, temp_color_bg);
-    if (temp_surface == NULL) {
-        THROW(err, ERR_GRAPH, "%s\n", "Could not render text")
-        return;
+Void draw_tile_matrix(F32 pos_x, F32 pos_y, Color *fg, Color *bg, TileMatrix *matrix, Err *err) {
+    Ch *curr_letter;
+    for (U8 row = 0; row < matrix->height; row++) {
+        for (U8 col = 0; col < matrix->width; col++) {
+            curr_letter = get_tile_from_matrix(matrix, col, row, err);
+            if (is_err(err)) {
+                return;
+            }
+            if (curr_letter[0] != '\0') {
+                draw_tile(pos_x + col, pos_y + row, fg, bg, curr_letter, err);
+                if (is_err(err)) {
+                    return;
+                } 
+            }
+        }
     }
-    SDL_SetSurfaceBlendMode(temp_surface, SDL_BLENDMODE_NONE);
-
-    U16 text_pos_x = (pos_x * game_screen->grid_sz) + (game_screen->grid_sz / 2) - 
-        (temp_surface->w / 2) + game_screen->horiz_pad;
-    U16 text_pos_y = (pos_y * game_screen->grid_sz) + (game_screen->grid_sz / 2) - 
-        (temp_surface->h / 2) + game_screen->vert_pad;
-    SDL_Rect temp_rect = { text_pos_x, text_pos_y, 0, 0 };          // Last two fields are ignored
-    if (SDL_BlitSurface(temp_surface, NULL, _surf, &temp_rect) != 0) {
-        THROW(err, ERR_GRAPH, "%s\n", "Could not blit text surface")
-        SDL_FreeSurface(temp_surface);
-        return;
-    }
-    SDL_FreeSurface(temp_surface);
-    */
-
 }

@@ -178,6 +178,18 @@ I16 main(I16 argc, Ch **argv) {
 
     U8 current_theme        = 0;
 
+    // Build a test tile matrix
+    TileMatrix matrix;
+    init_tile_matrix(&matrix, 3, 3);
+    set_tile_in_matrix(&matrix, "a", 0, 0, NULL);
+    set_tile_in_matrix(&matrix, "b", 0, 1, NULL);
+    set_tile_in_matrix(&matrix, "c", 0, 2, NULL);
+    set_tile_in_matrix(&matrix, "d", 1, 0, NULL);
+    
+    set_tile_in_matrix(&matrix, "f", 1, 2, NULL);
+    set_tile_in_matrix(&matrix, "g", 2, 0, NULL);
+    set_tile_in_matrix(&matrix, "h", 2, 1, NULL);
+    set_tile_in_matrix(&matrix, "i", 2, 2, NULL);
 
 	Event event;
     Bool is_running = TRUE;
@@ -243,8 +255,13 @@ I16 main(I16 argc, Ch **argv) {
         set_pad_color(themes[current_theme].color_pad);
         set_bg_color(themes[current_theme].color_bg);
         clear_screen();
-        draw_tile(2.5, 2.5, themes[current_theme].color_tile_body, themes[current_theme].color_tile_border, "b", 
-            &err);
+        draw_tile_matrix(2.5, 2.5, themes[current_theme].color_tile_body, themes[current_theme].color_tile_border, 
+            &matrix, &err);
+        if (is_err(&err)) {
+            close_graphics();
+            warn(&err);
+            exit(err.code);
+        }
         flip();
 	}
 

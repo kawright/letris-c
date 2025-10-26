@@ -67,8 +67,6 @@ Void draw_text_center(F32 pos_y, Ch *text, Err *err);
 
 Void draw_rectangle(F32 top_left_x, F32 top_left_y, F32 width, F32 height, Err *err);
 
-F32 guess_text_width(Ch *text, Err *err);           // DEPRECATED
-
 Void guess_text_dim(Ch *text, F32 *out_width, F32 *out_height, Err *err);
 
 #endif
