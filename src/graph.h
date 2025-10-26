@@ -17,6 +17,7 @@
 #define LAYOUT_GRID_HEIGHT              12                  // ""
 #define LAYOUT_TILE_BORDER_RATIO        0.1                 // Tile border to side-length ratio
 #define LAYOUT_TILE_FONT_RATIO          0.5
+#define LAYOUT_FREE_TILE_COUNT          3
 
 /* ----- OTHER CONSTANTS ----- */
 

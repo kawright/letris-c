@@ -26,6 +26,7 @@ HEADER_ONLY_FILES := \
 	src/type.h
 
 OBJS := \
+	build/obj/clock.o \
 	build/obj/err.o \
 	build/obj/event.o \
 	build/obj/graph.o \

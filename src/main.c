@@ -1,5 +1,6 @@
 /* main.c - entry point */
 
+#include "clock.h"
 #include "debug.h"
 #include "err.h"
 #include "event.h"
@@ -178,18 +179,16 @@ I16 main(I16 argc, Ch **argv) {
 
     U8 current_theme        = 0;
 
-    // Build a test tile matrix
-    TileMatrix matrix;
-    init_tile_matrix(&matrix, 3, 3);
-    set_tile_in_matrix(&matrix, "a", 0, 0, NULL);
-    set_tile_in_matrix(&matrix, "b", 0, 1, NULL);
-    set_tile_in_matrix(&matrix, "c", 0, 2, NULL);
-    set_tile_in_matrix(&matrix, "d", 1, 0, NULL);
-    
-    set_tile_in_matrix(&matrix, "f", 1, 2, NULL);
-    set_tile_in_matrix(&matrix, "g", 2, 0, NULL);
-    set_tile_in_matrix(&matrix, "h", 2, 1, NULL);
-    set_tile_in_matrix(&matrix, "i", 2, 2, NULL);
+    // Initialize tile matrices
+    TileMatrix      matrix_placed;
+    TileMatrix      matrix_free;
+    TileMatrix      matrix_shift;
+    init_tile_matrix(&matrix_placed, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
+    init_tile_matrix(&matrix_free, 1, LAYOUT_FREE_TILE_COUNT);
+    init_tile_matrix(&matrix_shift, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
+
+	Clock 	clock;
+	init_clock(&clock);
 
 	Event event;
     Bool is_running = TRUE;
@@ -238,6 +237,7 @@ I16 main(I16 argc, Ch **argv) {
                 break;
 
                 case KeyboardKey_SPACE:
+				DEBUG_LOG("Time Elapsed Since Last Spacebar Press: %ld ms\n", tick_clock(&clock))
                 break;
 
                 case KeyboardKey_NO_KEY:
@@ -255,13 +255,6 @@ I16 main(I16 argc, Ch **argv) {
         set_pad_color(themes[current_theme].color_pad);
         set_bg_color(themes[current_theme].color_bg);
         clear_screen();
-        draw_tile_matrix(2.5, 2.5, themes[current_theme].color_tile_body, themes[current_theme].color_tile_border, 
-            &matrix, &err);
-        if (is_err(&err)) {
-            close_graphics();
-            warn(&err);
-            exit(err.code);
-        }
         flip();
 	}
 

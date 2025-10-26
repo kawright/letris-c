@@ -10,6 +10,8 @@
 #include <string.h>
 
 Void init_tile_matrix(TileMatrix *matrix, U8 width, U8 height) {
+    matrix->pos_x               = 0;
+    matrix->pos_y               = 0;
     matrix->width               = width;
     matrix->height              = height;
     for (U8 row = 0; row < matrix->height; row++) {
@@ -74,7 +76,7 @@ Void draw_tile(F32 pos_x, F32 pos_y, Color *fg, Color *bg, Ch *letter, Err *err)
 
 }
 
-Void draw_tile_matrix(F32 pos_x, F32 pos_y, Color *fg, Color *bg, TileMatrix *matrix, Err *err) {
+Void draw_tile_matrix(Color *fg, Color *bg, TileMatrix *matrix, Err *err) {
     Ch *curr_letter;
     for (U8 row = 0; row < matrix->height; row++) {
         for (U8 col = 0; col < matrix->width; col++) {
@@ -83,7 +85,7 @@ Void draw_tile_matrix(F32 pos_x, F32 pos_y, Color *fg, Color *bg, TileMatrix *ma
                 return;
             }
             if (curr_letter[0] != '\0') {
-                draw_tile(pos_x + col, pos_y + row, fg, bg, curr_letter, err);
+                draw_tile(matrix->pos_x + col, matrix->pos_y + row, fg, bg, curr_letter, err);
                 if (is_err(err)) {
                     return;
                 } 
