@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "err.h"
 #include "event.h"
+#include "gamest.h"
 #include "graph.h"
 #include "tile.h"
 #include "theme.h"
@@ -186,11 +187,13 @@ I16 main(I16 argc, Ch **argv) {
     init_tile_matrix(&matrix_placed, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
     init_tile_matrix(&matrix_free, 1, LAYOUT_FREE_TILE_COUNT);
     init_tile_matrix(&matrix_shift, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
-	matrix_free.pos_x = 2.5;
+	matrix_free.pos_x = get_free_col();
 	matrix_free.pos_y = (-4.0);
 	set_tile_in_matrix(&matrix_free, "a", 0, 0, NULL);
 	set_tile_in_matrix(&matrix_free, "b", 0, 1, NULL);
 	set_tile_in_matrix(&matrix_free, "c", 0, 2, NULL);
+
+    init_game_state();
 
 	Clock 	clock;
 	init_clock(&clock);
@@ -226,23 +229,19 @@ I16 main(I16 argc, Ch **argv) {
                 break;
 
                 case KeyboardKey_LEFT:
-                if (current_theme == 0) {
-                    current_theme = 7;
-                } else {
-                    current_theme--;
-                }
+                shift_free_col_left();
                 break;
 
                 case KeyboardKey_RIGHT:
+                shift_free_col_right();
+                break;
+
+                case KeyboardKey_SPACE:
                 if (current_theme == 7) {
                     current_theme = 0;
                 } else {
                     current_theme++;
                 }
-                break;
-
-                case KeyboardKey_SPACE:
-				DEBUG_LOG("Time Elapsed Since Last Spacebar Press: %ld ms\n", tick_clock(&clock))
                 break;
 
                 case KeyboardKey_NO_KEY:
@@ -258,6 +257,7 @@ I16 main(I16 argc, Ch **argv) {
 
 		// Update Free Tiles Position:
 		F32 delta_time_secs = ((F32) tick_clock(&clock)) / 1000.0;
+        matrix_free.pos_x = (F32) get_free_col();
 		matrix_free.pos_y += delta_time_secs * TILE_DROP_SPD;
 
         // Drawing:

@@ -94,14 +94,3 @@ Void draw_tile_matrix(Color *fg, Color *bg, TileMatrix *matrix, Err *err) {
     }
 }
 
-U8 get_col_height(U8 index) {
-	return 0;
-}
-
-Void inc_col_height(U8 index, U8 mag) {
-
-}
-
-Void dec_col_height(U8 index, U8 mag) {
-
-}

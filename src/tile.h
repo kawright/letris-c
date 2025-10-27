@@ -22,14 +22,6 @@ typedef struct STRUCT_TILE_MATRIX {
     Ch      matrix[LAYOUT_GRID_HEIGHT][LAYOUT_GRID_WIDTH][TILE_LETTER_BUF_SZ];
 } TileMatrix;
 
-/* ----- TILE STATE FUNCTIONS ----- */
-
-U8 get_col_height(U8 index);
-
-Void inc_col_height(U8 index, U8 mag);
-
-Void dec_col_height(U8 index, U8 mag);
-
 /* ----- TILE MATRIX FUNCTIONS ----- */
 
 Void init_tile_matrix(TileMatrix *matrix, U8 width, U8 height);
