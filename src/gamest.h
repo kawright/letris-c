@@ -16,6 +16,7 @@
 #define LVL_6           5
 #define LVL_7           6
 #define LVL_8           7
+#define LVL_CT          8
 
 /* ----- ACCESSORS ----- */
 
@@ -26,6 +27,8 @@ U8 get_lvl();
 U8 get_free_col();
 
 U8 get_col_height(U8 index, Err *err);
+
+F32 get_drop_spd();
 
 /* ----- MUTATORS ----- */
 

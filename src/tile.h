@@ -10,7 +10,8 @@
 /* ----- CONSTANTS ----- */
 
 #define TILE_LETTER_BUF_SZ      3
-#define TILE_DROP_SPD			0.8
+#define TILE_DROP_SPD			0.8                     // DEPRECATED
+#define TILE_FAST_MULT          2.0
 
 /* ----- TYPES ----- */
 

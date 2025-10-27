@@ -178,8 +178,6 @@ I16 main(I16 argc, Ch **argv) {
     themes[THEME_BLACK].color_text_normal                   = &color_white;
     themes[THEME_BLACK].color_text_debug                    = &color_white;
 
-    U8 current_theme        = 0;
-
     // Initialize tile matrices
     TileMatrix      matrix_placed;
     TileMatrix      matrix_free;
@@ -188,7 +186,7 @@ I16 main(I16 argc, Ch **argv) {
     init_tile_matrix(&matrix_free, 1, LAYOUT_FREE_TILE_COUNT);
     init_tile_matrix(&matrix_shift, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
 	matrix_free.pos_x = get_free_col();
-	matrix_free.pos_y = (-4.0);
+	matrix_free.pos_y = (-3.0);
 	set_tile_in_matrix(&matrix_free, "a", 0, 0, NULL);
 	set_tile_in_matrix(&matrix_free, "b", 0, 1, NULL);
 	set_tile_in_matrix(&matrix_free, "c", 0, 2, NULL);
@@ -198,9 +196,11 @@ I16 main(I16 argc, Ch **argv) {
 	Clock 	clock;
 	init_clock(&clock);
 
+    F32 fast_mult = 1.0;
+
 	Event event;
     Bool is_running = TRUE;
-	while (is_running) {
+    while (is_running) {
 
         // Handle events:
 		get_next_event(&event);
@@ -226,6 +226,7 @@ I16 main(I16 argc, Ch **argv) {
                 break;
 
                 case KeyboardKey_DOWN:
+                fast_mult = TILE_FAST_MULT;               
                 break;
 
                 case KeyboardKey_LEFT:
@@ -237,18 +238,31 @@ I16 main(I16 argc, Ch **argv) {
                 break;
 
                 case KeyboardKey_SPACE:
-                if (current_theme == 7) {
-                    current_theme = 0;
-                } else {
-                    current_theme++;
-                }
+                inc_lvl();
+                DEBUG_LOG("Drop speed: %f\n", get_drop_spd())
                 break;
 
                 case KeyboardKey_NO_KEY:
                 case KeyboardKey_UNDEF:
                 break;
 
+                default:
+                break;
+
             }
+            break;
+            
+            case (EventType_KEY_REL):
+            switch (event.keyboard_key) {
+
+                case KeyboardKey_DOWN:
+                fast_mult = 1.0;
+                break;
+
+                default:
+                break;
+            }
+            break;
 
             default:
             break;
@@ -258,13 +272,14 @@ I16 main(I16 argc, Ch **argv) {
 		// Update Free Tiles Position:
 		F32 delta_time_secs = ((F32) tick_clock(&clock)) / 1000.0;
         matrix_free.pos_x = (F32) get_free_col();
-		matrix_free.pos_y += delta_time_secs * TILE_DROP_SPD;
+		matrix_free.pos_y += ((F32) delta_time_secs) * get_drop_spd() * fast_mult;
 
         // Drawing:
-        set_pad_color(themes[current_theme].color_pad);
-        set_bg_color(themes[current_theme].color_bg);
+        U8 current_lvl = get_lvl();
+        set_pad_color(themes[current_lvl].color_pad);
+        set_bg_color(themes[current_lvl].color_bg);
         clear_screen();			// TODO Refactor clear_screen to take pad and bg colors as args
-		draw_tile_matrix(themes[current_theme].color_tile_body, themes[current_theme].color_tile_border, &matrix_free,
+		draw_tile_matrix(themes[current_lvl].color_tile_body, themes[current_lvl].color_tile_border, &matrix_free,
 			&err);
 		if (is_err(&err)) {
 			warn(&err);

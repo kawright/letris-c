@@ -10,7 +10,7 @@ static U32          _score;
 static U8           _lvl;
 static U8           _free_col;
 static U8           _col_height[LAYOUT_GRID_WIDTH];
-
+static F32          _lvl_drop_spds[LVL_CT]; 
 
 Void init_game_state() {
     _score          = 0;
@@ -19,6 +19,14 @@ Void init_game_state() {
     for (U8 i = 0; i < LAYOUT_GRID_WIDTH; i++) {
         _col_height[i] = 0;
     }
+    _lvl_drop_spds[LVL_1] = 0.8;
+    _lvl_drop_spds[LVL_2] = 1.0;
+    _lvl_drop_spds[LVL_3] = 1.2;
+    _lvl_drop_spds[LVL_4] = 1.5;
+    _lvl_drop_spds[LVL_5] = 1.75;
+    _lvl_drop_spds[LVL_6] = 2.0;
+    _lvl_drop_spds[LVL_7] = 2.5;
+    _lvl_drop_spds[LVL_8] = 3.0;
 }
 
 U32 get_score() {
@@ -39,6 +47,10 @@ U8 get_col_height(U8 index, Err *err) {
         return 0;
     }
     return _col_height[index];
+}
+
+F32 get_drop_spd() {
+    return _lvl_drop_spds[_lvl];
 }
 
 Void inc_score(U8 amt) {
