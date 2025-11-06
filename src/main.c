@@ -6,6 +6,7 @@
 #include "event.h"
 #include "gamest.h"
 #include "graph.h"
+#include "rng.h"
 #include "tile.h"
 #include "theme.h"
 #include "type.h"
@@ -187,9 +188,10 @@ I16 main(I16 argc, Ch **argv) {
     init_tile_matrix(&matrix_shift, LAYOUT_GRID_WIDTH, LAYOUT_GRID_HEIGHT);
 	matrix_free.pos_x = get_free_col();
 	matrix_free.pos_y = (-3.0);
-	set_tile_in_matrix(&matrix_free, "a", 0, 0, NULL);
-	set_tile_in_matrix(&matrix_free, "b", 0, 1, NULL);
-	set_tile_in_matrix(&matrix_free, "c", 0, 2, NULL);
+	reseed();
+	set_tile_in_matrix(&matrix_free, get_rand_ch(), 0, 0, NULL);
+	set_tile_in_matrix(&matrix_free, get_rand_ch(), 0, 1, NULL);
+	set_tile_in_matrix(&matrix_free, get_rand_ch(), 0, 2, NULL);
 
     init_game_state();
 
@@ -230,11 +232,17 @@ I16 main(I16 argc, Ch **argv) {
                 break;
 
                 case KeyboardKey_LEFT:
-                shift_free_col_left();
+                if (get_free_col() != 0 && (matrix_free.pos_y + 3.0) <
+                        (LAYOUT_GRID_HEIGHT - get_col_height(get_free_col() - 1, NULL))) {
+                    shift_free_col_left();
+                }
                 break;
 
                 case KeyboardKey_RIGHT:
-                shift_free_col_right();
+                if (get_free_col() != LAYOUT_GRID_WIDTH - 1 && (matrix_free.pos_y + 3.0) <
+                        (LAYOUT_GRID_HEIGHT - get_col_height(get_free_col() + 1, NULL))) {
+                    shift_free_col_right();
+                }
                 break;
 
                 case KeyboardKey_SPACE:
@@ -274,12 +282,63 @@ I16 main(I16 argc, Ch **argv) {
         matrix_free.pos_x = (F32) get_free_col();
 		matrix_free.pos_y += ((F32) delta_time_secs) * get_drop_spd() * fast_mult;
 
+        // Collision Detection:
+        if ((matrix_free.pos_y + 3.0) >= (LAYOUT_GRID_HEIGHT - get_col_height(get_free_col(), NULL))) {
+            set_tile_in_matrix(
+                &matrix_placed, 
+                get_tile_from_matrix(&matrix_free, 0, 2, NULL), 
+                get_free_col(),
+                LAYOUT_GRID_HEIGHT - get_col_height(get_free_col(), NULL) - 1,
+                NULL);
+            set_tile_in_matrix(
+                &matrix_placed, 
+                get_tile_from_matrix(&matrix_free, 0, 1, NULL), 
+                get_free_col(),
+                LAYOUT_GRID_HEIGHT - get_col_height(get_free_col(), NULL) - 2,
+                NULL);
+            set_tile_in_matrix(
+                &matrix_placed, 
+                get_tile_from_matrix(&matrix_free, 0, 0, NULL), 
+                get_free_col(),
+                LAYOUT_GRID_HEIGHT - get_col_height(get_free_col(), NULL) - 3,
+                NULL);
+            inc_col_height(get_free_col(), NULL);
+            reset_free_col();
+            matrix_free.pos_y = -3.0;
+			set_tile_in_matrix(
+				&matrix_free,
+				get_rand_ch(),
+				0,
+				0,
+				NULL);
+			set_tile_in_matrix(
+				&matrix_free,
+				get_rand_ch(),
+				0,
+				1,
+				NULL);
+			set_tile_in_matrix(
+				&matrix_free,
+				get_rand_ch(),
+				0,
+				2,
+				NULL);
+        }
+
+
         // Drawing:
         U8 current_lvl = get_lvl();
         set_pad_color(themes[current_lvl].color_pad);
         set_bg_color(themes[current_lvl].color_bg);
         clear_screen();			// TODO Refactor clear_screen to take pad and bg colors as args
 		draw_tile_matrix(themes[current_lvl].color_tile_body, themes[current_lvl].color_tile_border, &matrix_free,
+			&err);
+		if (is_err(&err)) {
+			warn(&err);
+			close_graphics();
+			return err.code;
+		}
+		draw_tile_matrix(themes[current_lvl].color_tile_body, themes[current_lvl].color_tile_border, &matrix_placed,
 			&err);
 		if (is_err(&err)) {
 			warn(&err);

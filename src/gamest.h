@@ -40,6 +40,8 @@ Void shift_free_col_left();
 
 Void shift_free_col_right();
 
+Void reset_free_col();
+
 Void inc_col_height(U8 index, Err *err);                      // Always increments by three
 
 Void dec_col_height(U8 index, Err *err);                      // Always decrements by one

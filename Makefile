@@ -31,6 +31,7 @@ OBJS := \
 	build/obj/event.o \
 	build/obj/gamest.o \
 	build/obj/graph.o \
+	build/obj/rng.o \
 	build/obj/tile.o \
 	build/obj/theme.o
 

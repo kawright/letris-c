@@ -78,6 +78,10 @@ Void shift_free_col_right() {
     _free_col++;
 }
 
+Void reset_free_col() {
+    _free_col = 0;
+}
+
 Void inc_col_height(U8 index, Err *err) {
     if (index >= LAYOUT_GRID_WIDTH) {
         THROW(err, ERR_DATA, "Attempted out-of-bounds array access at index %d\n", index)
